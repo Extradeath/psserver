@@ -1,14 +1,4 @@
 [
 {"title":"Lobby","isOfficial":true,"autojoin":true,"modchat":false},
 {"title":"Staff","isPrivate":true,"staffRoom":true,"staffAutojoin":true},
-{"title":"Tournaments","auth":{"produde":"#","softlopunny":"@"}},
-{"title":"TheHappyPlace","auth":{"sexypandabae":"#","aceblaziken63":"#"}},
-{"title":"The Real Nigga Room","auth":{"milktown20":"#","geoffbruedly":"#","extradeath":"@","theichimarugin":"#","jorumi":"+","iastpats":"%"},"modchat":false},
-{"title":"The Lucky Room","auth":{"cutegirl321":"#"}},
-{"title":"Lucario League","introMessage":"\"Hello, and Welcome to Lucario League. Challenge any tier for a spot as gym leader or gym trainer. You may do anything here and say anything! Enjoy!\"","auth":{"arcaniskimber":"#"},"desc":"Come to our league where we love Lucario!"},
-{"title":"The Diddident League"},
-{"title":"The Dissident League","auth":{"athein":"#","dldisruption":"%"}},
-{"title":"Roleplaying","auth":{"philmiester":"#","giannolson":"#","wheelaxel":"#","verapichu":"@","battledomeguy":"%","cassiem":"%","azenheadbutt":"+"},"modchat":false},
-{"title":"Game Corner"},
-{"title":"Chamber Of Secrets","auth":{"charizardprimal":"#","izzythe1st":"#","azenheadbutt":"+","softlopunny":"#"},"introMessage":"<div class=\"broadcast-green\"><font color=white size=5 face=Impact><center><u>Welcome to the <b>Chamber Of Secrets<b><u><center><img src=http://mtv.mtvnimages.com/uri/mgid:file:http:shared:mtv.com/news/wp-content/uploads/2014/11/tumblr_mk32c7x56r1s9n4cro1_250-1415235252.gif width=500 height=300> <div class=\"broadcast-green\"> <br> <font color=black size=4 face=Arial Black> <a href=\"http://shan-extradeath.rhcloud.com-80.psim.us/\">Back To Lobby<a><a href=\"http://www.smogon.com/tournaments/tour/rules\"> | Rules<a> | <a href=ttp://www.smogon.com/forums/forums/smogon-tour.49/>Tours<a> | <a http://www.smogon.com/tournaments/tour/rules#tiers>Tiers<a> | <a http://www.smogon.com/tournaments/tour/rules#point>Point System<a><hr width=3%><br> <font color=purple size=3 face=cursive><center>Intro made by Soft Lopunny<cr> <div class=\"broadcast-green\"><font color=black size=2 face= cursive><center>FoxyProxy helped a little<center>"}
 ]
