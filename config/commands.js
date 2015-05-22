@@ -1559,19 +1559,19 @@ var commands = exports.commands = {
 	cpoof: 'poof',
 	poof: (function () {
 		var messages = [
-			"{{user}} killed them. {{user}} killed them all.",
-			"snuggled with Serperior and fell asleep, snoring cutely.",
-			"'s team got swept by Wobbuffet and raged!",
-			"spoke of the Wonder Guard Sableye incident!",
-			"made a coding error!",
-			"died of low ladder!",
-			"was eaten by a Mightyena!",
-			"got confused by the Anime tier!",
-			"insulted Sable in front of Serp!",
-			"got choice locked!",
-			"exploded!",
-			"got confused and tried to use Flying type against Wind type!",
-			"tried to join the Midget Room and was too tall!"
+			"got bullied too much by Yuuki!",
+			"just got rek't by Vaporeon!",
+			"was hit by a Kamehameha!",
+			"was warned by BT for RP too much!",
+			"died of a broken heart!",
+			"is off to pull a Zenji!",
+			"got hit by confuse ray!",
+			"drowned in bunnies and kitties!",
+			"got embarrassed by their low ladder rating!",
+			"was taken to Spirit World!",
+			"vanished into thin air!",
+			"tried having an opinion on the internet and died!",
+			"was hugged by a horde of Muk!"
 		];
 
 		return function (target, room, user) {
