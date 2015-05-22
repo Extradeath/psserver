@@ -3,7 +3,7 @@
  * Pokemon Showdown - https://pokemonshowdown.com/
  *
  * These are commands. For instance, you can define the command 'whois'
- * here, then use it by typing /whois into Pokemon Showdown.
+ * here, then use it by typing /whois into Pokemon Showdown.k
  *
  * A command can be in the form:
  *   ip: 'whois',
@@ -38,26 +38,6 @@
  * Commands return the message the user should say. If they don't
  * return anything or return something falsy, the user won't say
  * anything.
- *
- * A command can also be an object, in which case is treated like
- * a namespace:
- *
- *   game: {
- *     play: function (target, room, user) {
- *       user.isPlaying = true;
- *       this.sendReply("Playing.");
- *     },
- *     stop: function (target, room, user) {
- *       user.isPlaying = false;
- *       this.sendReply("Stopped.");
- *     }
- *   }
- *
- * These commands can be called by '/game play' and '/game stop'.
- * Namespaces help organise commands, and nest them under
- * one main command.
- * Note: Multiple namespaces can be nested, but the final (innermost)
- *       command must be a function.
  *
  * Commands have access to the following functions:
  *
@@ -143,18 +123,12 @@
  *     target = this.canTalk(target);
  *     if (!target) return false;
  *
- * this.parse(message, inNamespace)
+ * this.parse(message)
  *   Runs the message as if the user had typed it in.
  *
  *   Mostly useful for giving help messages, like for commands that
  *   require a target:
  *     if (!target) return this.parse('/help msg');
- *
- *   If `inNamespace` is true, then the message is parsed in that
- *   corresponding namespace:
- *     // command msg is in namespace test. (ie. /test msg)
- *     this.parse('/help', true); // is parsed as if the user said
- *                                // '/test help'
  *
  *   After 10 levels of recursion (calling this.parse from a command
  *   called by this.parse from a command called by this.parse etc)
@@ -236,7 +210,7 @@ var commands = exports.commands = {
 		if (targetUser.isSysop) {
 			this.sendReply("(Pok\xE9mon Showdown System Operator)");
 		}
-		if (!targetUser.registered) {
+		if (!targetUser.authenticated) {
 			this.sendReply("(Unregistered)");
 		}
 		if ((cmd === 'ip' || cmd === 'whoare') && (user.can('ip', targetUser) || user === targetUser)) {
@@ -307,7 +281,6 @@ var commands = exports.commands = {
 	 * Shortcuts
 	 *********************************************************/
 
-	inv: 'invite',
 	invite: function (target, room, user) {
 		target = this.splitTarget(target);
 		if (!this.targetUser) {
@@ -411,8 +384,8 @@ var commands = exports.commands = {
 				if (move.flags['sound']) details["<font color=black>&#10003; Sound</font>"] = "";
 				if (move.flags['bullet']) details["<font color=black>&#10003; Bullet</font>"] = "";
 				if (move.flags['pulse']) details["<font color=black>&#10003; Pulse</font>"] = "";
-				if (!move.flags['protect'] && !/(ally|self)/i.test(move.target)) details["<font color=black>&#10003; Bypasses Protect</font>"] = "";
-				if (move.flags['authentic']) details["<font color=black>&#10003; Bypasses Substitutes</font>"] = "";
+				if (move.flags['protect']) details["<font color=black>&#10003; Blocked by Protect</font>"] = "";
+				if (move.flags['authentic']) details["<font color=black>&#10003; Ignores substitutes</font>"] = "";
 				if (move.flags['defrost']) details["<font color=black>&#10003; Thaws user</font>"] = "";
 				if (move.flags['bite']) details["<font color=black>&#10003; Bite</font>"] = "";
 				if (move.flags['punch']) details["<font color=black>&#10003; Punch</font>"] = "";
@@ -549,7 +522,7 @@ var commands = exports.commands = {
 				target = target.charAt(0).toUpperCase() + target.slice(1, target.indexOf(' type'));
 				if (target in Tools.data.TypeChart) {
 					if (!searches['types']) searches['types'] = {};
-					if (Object.count(searches['types'], true) === 2 && !isNotSearch) return this.sendReplyBox("Specify a maximum of two types.");
+					if (Object.count(searches['types'], true) === 4 && !isNotSearch) return this.sendReplyBox("Specify a maximum of four types.");
 					if ((searches['types'][target] && isNotSearch) || (searches['types'][target] === false && !isNotSearch)) return this.sendReplyBox("A search cannot both exclude and include a type.");
 					searches['types'][target] = !isNotSearch;
 					continue;
@@ -575,7 +548,7 @@ var commands = exports.commands = {
 			switch (search) {
 				case 'types':
 					for (var mon in dex) {
-						if (Object.count(searches[search], true) === 2) {
+						if (Object.count(searches[search], true) === 3) {
 							if (!(searches[search][dex[mon].types[0]]) || !(searches[search][dex[mon].types[1]])) delete dex[mon];
 						} else {
 							if (searches[search][dex[mon].types[0]] === false || searches[search][dex[mon].types[1]] === false || (Object.count(searches[search], true) > 0 &&
@@ -767,21 +740,23 @@ var commands = exports.commands = {
 		this.sendReplyBox(buffer);
 	},
 
-	weaknesses: 'weakness',
 	weak: 'weakness',
 	resist: 'weakness',
 	weakness: function (target, room, user) {
-		if (!target) return this.parse('/help weakness');
 		if (!this.canBroadcast()) return;
 		var targets = target.split(/[ ,\/]/);
 
 		var pokemon = Tools.getTemplate(target);
 		var type1 = Tools.getType(targets[0]);
 		var type2 = Tools.getType(targets[1]);
+		var type3 = Tools.getType(targets[2]);
 
 		if (pokemon.exists) {
 			target = pokemon.species;
-		} else if (type1.exists && type2.exists) {
+		} else if (type1.exists && type2.exists && type3.exists && type1 !== type2 && type2 !== type3) {
+			pokemon = {types: [type1.id, type2.id, type3.id]};
+			target = type1.id + "/" + type2.id + "/" + type3.id;
+		} else if (type1.exists && type2.exists && type1 !== type2) {
 			pokemon = {types: [type1.id, type2.id]};
 			target = type1.id + "/" + type2.id;
 		} else if (type1.exists) {
@@ -901,20 +876,11 @@ var commands = exports.commands = {
 		this.sendReplyBox("Uptime: <b>" + uptimeText + "</b>");
 	},
 
-	groups: function (target, room, user) {
+	rankguide: function (target, room, user) {
 		if (!this.canBroadcast()) return;
-		this.sendReplyBox(
-			"+ <b>Voice</b> - They can use ! commands like !groups, and talk during moderated chat<br />" +
-			"% <b>Driver</b> - The above, and they can mute. Global % can also lock users and check for alts<br />" +
-			"@ <b>Moderator</b> - The above, and they can ban users<br />" +
-			"&amp; <b>Leader</b> - The above, and they can promote to moderator and force ties<br />" +
-			"# <b>Room Owner</b> - They are leaders of the room and can almost totally control it<br />" +
-			"~ <b>Administrator</b> - They can do anything, like change what this message says"
-		);
+		this.sendReplyBox('+ <b>Voice</b> - They can use ! commands like !groups, and talk during moderated chat<br />% <b>Driver</b> - The above, and they can mute. Global % can also lock users and check for alts<br />@ <b>Moderator</b> - The above, and they can ban users<br />&amp; <b>Leader</b> - The above, and they can promote to moderator and force ties<br /># <b>Room Owner</b> - They are leaders of the room and can almost totally control it<br />~ <b>Administrator</b> - They can do anything, like change what this message says<br /><br /><a href="http://hastebin.com/raw/muvivavevo"><button class="astext"><font color="blue"><u>Click Here For The In-depth Rank Guide</u></a></button>');
 	},
 
-	repo: 'opensource',
-	repository: 'opensource',
 	git: 'opensource',
 	opensource: function (target, room, user) {
 		if (!this.canBroadcast()) return;
@@ -972,8 +938,8 @@ var commands = exports.commands = {
 		if (!this.canBroadcast()) return;
 		this.sendReplyBox(
 			"New to competitive pokemon?<br />" +
-			"- <a href=\"https://www.smogon.com/sim/ps_guide\">Beginner's Guide to Pokémon Showdown</a><br />" +
-			"- <a href=\"https://www.smogon.com/dp/articles/intro_comp_pokemon\">An introduction to competitive Pokémon</a><br />" +
+			"- <a href=\"https://www.smogon.com/sim/ps_guide\">Beginner's Guide to PokÃƒÂ©mon Showdown</a><br />" +
+			"- <a href=\"https://www.smogon.com/dp/articles/intro_comp_pokemon\">An introduction to competitive PokÃƒÂ©mon</a><br />" +
 			"- <a href=\"https://www.smogon.com/bw/articles/bw_tiers\">What do 'OU', 'UU', etc mean?</a><br />" +
 			"- <a href=\"https://www.smogon.com/xyhub/tiers\">What are the rules for each format? What is 'Sleep Clause'?</a>"
 		);
@@ -1001,7 +967,6 @@ var commands = exports.commands = {
 		);
 	},
 
-	capintro: 'cap',
 	cap: function (target, room, user) {
 		if (!this.canBroadcast()) return;
 		this.sendReplyBox(
@@ -1051,7 +1016,7 @@ var commands = exports.commands = {
 		if (target === 'all' || target === 'omofthemonth' || target === 'omotm' || target === 'month') {
 			matched = true;
 			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3481155/\">Other Metagame of the Month</a><br />";
-			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3516349/\">Current OMotM: Hidden Type</a><br />";
+			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3521887/\">Current OMotM: Classic Hackmons</a><br />";
 		}
 		if (target === 'all' || target === 'seasonal') {
 			matched = true;
@@ -1065,19 +1030,19 @@ var commands = exports.commands = {
 		}
 		if (target === 'all' || target === '1v1') {
 			matched = true;
-			if (target !== 'all') buffer += "Bring three Pokémon to Team Preview and choose one to battle.<br />";
+			if (target !== 'all') buffer += "Bring three PokÃƒÂ©mon to Team Preview and choose one to battle.<br />";
 			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3496773/\">1v1</a><br />";
 		}
 		if (target === 'all' || target === 'monotype') {
 			matched = true;
-			if (target !== 'all') buffer += "All Pokémon on a team must share a type.<br />";
+			if (target !== 'all') buffer += "All PokÃƒÂ©mon on a team must share a type.<br />";
 			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3493087/\">Monotype</a><br />";
 			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3517737/\">Monotype Viability Rankings</a><br />";
 		}
 		if (target === 'all' || target === 'tiershift' || target === 'ts') {
 			matched = true;
-			if (target !== 'all') buffer += "Pokémon below OU/BL get all their stats boosted. UU/BL2 get +5, RU/BL3 get +10, and NU or lower get +15.<br />";
-			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3532973/\">Tier Shift</a><br />";
+			if (target !== 'all') buffer += "PokÃƒÂ©mon below OU get all their stats boosted. BL/UU get +5, BL2/RU get +10, and BL3/NU or lower get +15.<br />";
+			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3508369/\">Tier Shift</a><br />";
 			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3514386/\">Tier Shift Viability Rankings</a><br />";
 		}
 		if (target === 'all' || target === 'pu') {
@@ -1092,13 +1057,13 @@ var commands = exports.commands = {
 		}
 		if (target === 'all' || target === 'almostanyability' || target === 'aaa') {
 			matched = true;
-			if (target !== 'all') buffer += "Pokémon can use any ability, barring the few that are banned.<br />";
+			if (target !== 'all') buffer += "PokÃƒÂ©mon can use any ability, barring the few that are banned.<br />";
 			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3528058/\">Almost Any Ability</a><br />";
 			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3517258/\">Almost Any Ability Viability Rankings</a><br />";
 		}
 		if (target === 'all' || target === 'stabmons') {
 			matched = true;
-			if (target !== 'all') buffer += "Pokémon can use any move of their typing, in addition to the moves they can normally learn.<br />";
+			if (target !== 'all') buffer += "PokÃƒÂ©mon can use any move of their typing, in addition to the moves they can normally learn.<br />";
 			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3493081/\">STABmons</a><br />";
 			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3512215/\">STABmons Viability Rankings</a><br />";
 		}
@@ -1126,9 +1091,9 @@ var commands = exports.commands = {
 			matched = true;
 			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3524287/\">Middle Cup</a><br />";
 		}
-		if (target === 'all' || target === 'outheorymon' || target === 'theorymon') {
+		if (target === 'all' || target === 'skybattle') {
 			matched = true;
-			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3532902/\">OU Theorymon</a><br />";
+			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3493601/\">Sky Battle</a><br />";
 		}
 		if (!matched) {
 			return this.sendReply("The Other Metas entry '" + target + "' was not found. Try /othermetas or /om for general help.");
@@ -1192,7 +1157,7 @@ var commands = exports.commands = {
 			"<br />" +
 			"Room owners (#) can also use:<br />" +
 			"- /roomintro <em>intro</em>: sets the room introduction that will be displayed for all users joining the room<br />" +
-			"- /rules <em>rules link</em>: set the room rules link seen when using /rules<br />" +
+			"- /rules <em>rules link</em>: set the room rules link seen when using /<br />" +
 			"- /roommod, /roomdriver <em>username</em>: appoint a room moderator/driver<br />" +
 			"- /roomdemod, /roomdedriver <em>username</em>: remove a room moderator/driver<br />" +
 			"- /modchat <em>[%/@/#]</em>: set modchat level<br />" +
@@ -1213,7 +1178,7 @@ var commands = exports.commands = {
 			"- We wait a few minutes before restarting so people can finish up their battles<br />" +
 			"- The restart itself will take around 0.6 seconds<br />" +
 			"- Your ladder ranking and teams will not change<br />" +
-			"- We are restarting to update Pokémon Showdown to a newer version"
+			"- We are restarting to update PokÃƒÂ©mon Showdown to a newer version"
 		);
 	},
 
@@ -1331,13 +1296,13 @@ var commands = exports.commands = {
 		}
 		if (target === 'all' || target === 'underused' || target === 'uu') {
 			matched = true;
-			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3530610/\">np: UU Stage 2.1</a><br />";
+			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3528903/\">np: UU Stage 2</a><br />";
 			buffer += "- <a href=\"https://www.smogon.com/dex/xy/tags/uu/\">UU Banlist</a><br />";
 			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3523649/\">UU Viability Rankings</a><br />";
 		}
 		if (target === 'all' || target === 'rarelyused' || target === 'ru') {
 			matched = true;
-			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3533095/\">np: RU Stage 8</a><br />";
+			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3527140/\">np: RU Stage 6</a><br />";
 			buffer += "- <a href=\"https://www.smogon.com/dex/xy/tags/ru/\">RU Banlist</a><br />";
 			buffer += "- <a href=\"https://www.smogon.com/forums/threads/3523627/\">RU Viability Rankings</a><br />";
 		}
@@ -1576,17 +1541,11 @@ var commands = exports.commands = {
 		this.sendReply('|raw|<img src="' + Tools.escapeHTML(targets[0]) + '" alt="" width="' + toId(targets[1]) + '" height="' + toId(targets[2]) + '" />');
 	},
 
-	htmlbox: function (target, room, user, connection, cmd, message) {
+	htmlbox: function (target, room, user) {
 		if (!target) return this.parse('/help htmlbox');
+		if (!this.can('declare', null, room)) return;
 		if (!this.canHTML(target)) return;
-
-		if (room.id === 'development') {
-			if (!this.can('announce', null, room)) return;
-			if (message.charAt(0) === '!') this.broadcasting = true;
-		} else {
-			if (!this.can('declare', null, room)) return;
-			if (!this.canBroadcast('!htmlbox')) return;
-		}
+		if (!this.canBroadcast('!htmlbox')) return;
 
 		this.sendReplyBox(target);
 	},
@@ -1595,6 +1554,57 @@ var commands = exports.commands = {
 		if (!this.can('rawpacket')) return false;
 		// secret sysop command
 		room.add(target);
+	},
+		d: 'poof',
+	cpoof: 'poof',
+	poof: (function () {
+		var messages = [
+			"{{user}} killed them. {{user}} killed them all.",
+			"snuggled with Serperior and fell asleep, snoring cutely.",
+			"'s team got swept by Wobbuffet and raged!",
+			"spoke of the Wonder Guard Sableye incident!",
+			"made a coding error!",
+			"died of low ladder!",
+			"was eaten by a Mightyena!",
+			"got confused by the Anime tier!",
+			"insulted Sable in front of Serp!",
+			"got choice locked!",
+			"exploded!",
+			"got confused and tried to use Flying type against Wind type!",
+			"tried to join the Midget Room and was too tall!"
+		];
+
+		return function (target, room, user) {
+			if (Config.poofOff) return this.sendReply("Poof is currently disabled.");
+			if (target && !this.can('broadcast')) return false;
+			if (room.id !== 'lobby') return false;
+			var message = target || messages[Math.floor(Math.random() * messages.length)];
+			if (message.indexOf('{{user}}') < 0)
+				message = '{{user}} ' + message;
+			message = message.replace(/{{user}}/g, user.name);
+			if (!this.canTalk(message)) return false;
+
+			var colour = '#' + [1, 1, 1].map(function () {
+				var part = Math.floor(Math.random() * 0xaa);
+				return (part < 0x10 ? '0' : '') + part.toString(16);
+			}).join('');
+
+			room.addRaw('<center><strong><font color="' + colour + '">~~ ' + Tools.escapeHTML(message) + ' ~~</font></strong></center>');
+			user.disconnectAll();
+		};
+	})(),
+
+	poofoff: 'nopoof',
+	nopoof: function () {
+		if (!this.can('poofoff')) return false;
+		Config.poofOff = true;
+		return this.sendReply("Poof is now disabled.");
+	},
+
+	poofon: function () {
+		if (!this.can('poofoff')) return false;
+		Config.poofOff = false;
+		return this.sendReply("Poof is now enabled.");
 	},
 
 	/*********************************************************
@@ -1679,29 +1689,13 @@ var commands = exports.commands = {
 			this.sendReply("/calc - Provides a link to a damage calculator");
 			this.sendReply("!calc - Shows everyone a link to a damage calculator. Requires: + % @ & ~");
 		}
-		if (target === 'away' || target === 'idle') {
+		if (target === 'blockchallenges' || target === 'away' || target === 'idle') {
 			matched = true;
-			this.sendReply("/away - Blocks challenges and private messages. Unblock them with /back.");
+			this.sendReply("/away - Blocks challenges so no one can challenge you. Deactivate it with /back.");
 		}
-		if (target === 'blockchallenges') {
+		if (target === 'allowchallenges' || target === 'back') {
 			matched = true;
-			this.sendReply("/blockchallenges - Blocks challenges so no one can challenge you. Unblock them with /unblockchallenges.");
-		}
-		if (target === 'blockpms' || target === 'ignorepms') {
-			matched = true;
-			this.sendReply("/blockpms - Blocks private messages. Unblock them with /unignorepms.");
-		}
-		if (target === 'back') {
-			matched = true;
-			this.sendReply("/back - Unblocks challenges and/or private messages, if either are blocked.");
-		}
-		if (target === 'unblockchallenges' || target === 'allowchallenges') {
-			matched = true;
-			this.sendReply("/unblockchallenges - Unblocks challenges so you can be challenged again. Block them with /blockchallenges.");
-		}
-		if (target === 'unblockpms' || target === 'unignorepms') {
-			matched = true;
-			this.sendReply("/unblockpms - Unblocks private messages. Block them with /blockpms.");
+			this.sendReply("/back - Unlocks challenges so you can be challenged again. Deactivate it with /away.");
 		}
 		if (target === 'faq') {
 			matched = true;
@@ -1710,15 +1704,8 @@ var commands = exports.commands = {
 		}
 		if (target === 'effectiveness' || target === 'matchup' || target === 'eff' || target === 'type') {
 			matched = true;
-			this.sendReply("/effectiveness [attack], [defender] - Provides the effectiveness of a move or type on another type or a Pokémon.");
-			this.sendReply("!effectiveness [attack], [defender] - Shows everyone the effectiveness of a move or type on another type or a Pokémon.");
-		}
-		if (target === 'weakness' || target === 'weaknesses' || target === 'weak' || target === 'resist') {
-			matched = true;
-			this.sendReply("/weakness [pokemon] - Provides a Pokemon's resistances, weaknesses, and immunities, ignoring abilities.");
-			this.sendReply("/weakness [type 1]/[type 2] - Provides a type or type combination's resistances, weaknesses, and immunities, ignoring abilities.");
-			this.sendReply("!weakness [pokemon] - Shows everyone a Pokemon's resistances, weaknesses, and immunities, ignoring abilities. Requires: + % @ & ~");
-			this.sendReply("!weakness [type 1]/[type 2] - Shows everyone a type or type combination's resistances, weaknesses, and immunities, ignoring abilities. Requires: + % @ & ~");
+			this.sendReply("/effectiveness OR /matchup OR /eff OR /type [attack], [defender] - Provides the effectiveness of a move or type on another type or a PokÃƒÂ©mon.");
+			this.sendReply("!effectiveness OR !matchup OR !eff OR !type [attack], [defender] - Shows everyone the effectiveness of a move or type on another type or a PokÃƒÂ©mon.");
 		}
 		if (target === 'dexsearch' || target === 'dsearch' || target === 'ds') {
 			matched = true;
@@ -1744,11 +1731,14 @@ var commands = exports.commands = {
 			matched = true;
 			this.sendReply("/invite [username], [roomname] - Invites the player [username] to join the room [roomname].");
 		}
-		if (target === 'addplayer') {
+		if (target === 'all' || target === 'poll') {
 			matched = true;
-			this.sendReply("/addplayer [username] - Allow the specified user to join the battle as a player.");
+			this.sendReply("/poll [question], [option], [option], etc. - Creates a poll.");
 		}
-
+		if (target === 'all' || target === 'vote') {
+			matched = true;
+			this.sendReply("/vote [option] - votes for the specified option in the poll.");
+		}
 		// driver commands
 		if (target === 'lock' || target === 'l') {
 			matched = true;
@@ -1938,10 +1928,348 @@ var commands = exports.commands = {
 		} else if (!matched) {
 			this.sendReply("Help for the command '" + target + "' was not found. Try /help for general help");
 		}
-	}
+	},
+	
+		/*********************************************************
+	 * Kakuja commands
+	 *********************************************************/
+	memes: 'meme',
+	meme: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		target = target.toLowerCase();
+		var matched = false;
+		if (target === ''){
+			matched = true;
+			this.sendReplyBox('<center><b><font color="purple"><a href="http://pastebin.com/VT7Nc06s">List of memes!</a><br>Is there a meme missing that you want added? Message a & or ~ and we will consider adding it!</font></b></center>');
+                }
+		if (target === 'salt'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/Y5bbFq1.jpg" />');
+		}
+		if (target === 'anorexic'){
+			matched = true;
+			this.sendReplyBox('<img src="http://www.humorsharing.com/media/images/1402/i_anorexic_funny_meme_52f6564e73b39.jpg" width="300" height="285" />');
+		}
+		if (target === 'bitches'){
+			matched = true;
+			this.sendReplyBox('<img src="http://www.killthehydra.com/wp-content/uploads/patrick-stewart-star-trek-meme1.jpg" width="400" height="280" />');
+		}
+		if (target === 'booty'){
+			matched = true;
+			this.sendReplyBox('<img src="http://www.quickmeme.com/img/70/702b57e6590f78366b7ada8e4910f43971be735bbed075e5fec653482f572820.jpg" width="420" height="280" />');
+		}
+		if (target === 'kakuja'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/5iDZQBf.png" />');
+		}
+		if (target === 'disgusting'){
+			matched = true;
+			this.sendReplyBox('<img src=http://i.imgur.com/f5l52n8.jpg" width="400" height="275" />');
+		}
+		if (target === 'arsenal'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/BsdMZRr.png" />');
+		}
+		if (target === 'gay'){
+			matched = true;
+			this.sendReplyBox('<center><font size="5">LOL NICE TRY FAGGOT</font></center>');
+		}
+		if (target === 'smashing'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/H9JJP25.jpg" />');
+		}
+		if (target === 'that escalated quickly'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/27OWcbj.jpg" />');
+		}
+		if (target === 'lady gogo'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/YT444tK.png" />');
+		}
+		if (target === 'boyfriend of the year'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/Xfy2q87.png" />');
+		}
+		if (target === 'nipples'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/p1pKlws.png" />');
+		}
+		if (target === 'spider'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/UEQGyCi.jpg" />');
+		}
+		if (target === 'patrickstump'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/dzSqDKG.jpg" />');
+		}
+		if (target === 'mlg'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/STG6Ugz.jpg" />');
+		}
+		if (target === 'christian gray'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/LVzM9us.png" />');
+		}
+		if (target === 'dj not nice'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/fjl9XW7.png" />');
+		}
+		if (target === 'deez nuts'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/nYD6ctb.gif" />');
+		}
+		if (target === 'fucked'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/trZWW6P.png" />');
+		}
+		if (target === 'uwot'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/cumZfCh.png" />');
+		}
+		if (target === 'fedora'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/FbbdUT9.jpg" />');
+		}
+		if (target === 'bongos'){
+			matched = true;
+			this.sendReplyBox('<img src="http://26.media.tumblr.com/tumblr_lzyy696EpI1r34jyyo2_250.gif" />');
+		}
+		if (target === 'dont blink'){
+			matched = true;
+			this.sendReplyBox('<img src="http://www.scaredstiffreviews.com/wp-content/uploads/2014/11/Dont-Blink2.gif" />');
+		}
+		if (target === 'ps mafia'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/GrLo4FV.png" />');
+		}
+		if (target === 'pretty'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/qoFSQ6A.gif" />');
+		}
+		if (target === 'what even'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/pkm4Bj3.png" />');
+		}
+		if (target === 'girl you fine'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/YD6gPo9.png" />');
+		}
+		if (target === 'umad'){
+			matched = true;
+			this.sendReplyBox('<img src="http://dailysnark.com/wp-content/uploads/2013/11/umad.gif" />');
+		}
+		if (target === 'if you know what i mean'){
+			matched = true;
+			this.sendReplyBox('<img src="http://fcdn.mtbr.com/attachments/california-norcal/805709d1370480032-should-strava-abandon-kom-dh-2790387-if-you-know-what-i-mean.png" />');
+		}
+		if (target === 'doge'){
+			matched = true;
+			this.sendReplyBox('<img src="http://0.media.dorkly.cvcdn.com/79/63/33f2d1f368e229c7e09baa64804307b4-a-wild-doge-appeared.jpg" height="242" width="300" />');
+		}
+		if (target === 'orgasm'){
+			matched = true;
+			this.sendReplyBox('<img src="http://puu.sh/hHidM/db81baee7d.png" />');
+		}
+		if (target === 'macklemore'){
+			matched = true;
+			this.sendReplyBox('<img src="http://40.media.tumblr.com/43baf9472512df7d44f8f938a0e997be/tumblr_nad882rLHK1qewacoo1_500.jpg" width="300 height="343" />');
+		}
+		if (target === 'troll'){
+			matched = true;
+			this.sendReplyBox('<img src="http://static3.wikia.nocookie.net/__cb20131014231760/legomessageboards/images/c/c2/Troll-face.png" height="200" width="200" />');
+		}
+		if (target === 'fail'){
+			matched = true;
+			this.sendReplyBox('<img src="http://diginomica.com/wp-content/uploads/2013/11/+big-fail2.jpg" height="180" width="320" />');
+		}
+		if (target === 'hawkward'){
+			matched = true;
+			this.sendReplyBox('<img src="https://i.imgflip.com/e6cip.jpg" height="350" width="330" />');
+		}
+		if (target === 'cool story bro'){
+			matched = true;
+			this.sendReplyBox('<img src="http://www.troll.me/images/creepy-willy-wonka/cool-story-bro-lets-hear-it-one-more-time.jpg" height="275" width="275" />');
+		}
+		if (target === 'udense'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i2.kym-cdn.com/photos/images/newsfeed/000/461/903/3a9.png" height="250" width="340" />');
+		}
+		if (target === 'you dont say'){
+			matched = true;
+			this.sendReplyBox('<img src="http://www.wired.com/images_blogs/gamelife/2014/01/youdontsay.jpg" height="209" width="250" />');
+		}
+		if (target === 'ninjask\'d'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/ST7DNnh.png" />');
+		}
+		if (target === 'fuck this'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i3.kym-cdn.com/photos/images/original/000/571/700/c3a.gif" height="150" width="300" />');
+		}
+		if (target === 'slowbro'){
+			matched = true;
+			this.sendReplyBox('<img src="http://static.fjcdn.com/pictures/U_698d9e_2568950.jpg" height="216" width="199" />');
+		}
+		if (target === 'rekt'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/47JMugo.jpg" />');
+		}
+		if (target === 'badass'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/Ai78NEt.png" />');
+		}
+		if (target === 'fabulous'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/HsY0KpR.gif" />');
+		}
+		if (target === 'wrong neighborhood'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/aiv8eyj.gif" />');
+		}
+		if (target === 'i regret nothing'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/1brNf9v.gif" />');
+		}
+		if (target === 'twss'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/cRoo7mt.jpg" />');
+		}
+		if (target === 'hm01'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/zl7CBuw.jpg" />');
+		}
+		if (target === 'bitch please'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/8hwtxWt.gif" />');
+		}
+		if (target === 'control your orgasms'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/QNO3TcF.gif" />');
+		}
+		if (target === 'haters gonna hate'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/FigQw0C.gif" />');
+		}
+		if (target === 'your mom'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/gBsEdHr.jpg" />');
+		}
+		if (target === 'shrekt'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/vXffwmY.jpg" />');
+		}
+		if (target === 'snickers'){
+			matched = true;
+			this.sendReplyBox('<img src="http://static.fjcdn.com/pictures/Grab+a+snickers+not+mine_b3375c_4726614.png" />');
+		}
+		if (target === 'baka'){
+			matched = true;
+			this.sendReplyBox('<img src="http://cdn.sakuramagazine.com/wp-content/uploads/2013/12/Baka-manga-34558590-640-512.jpg" width="320" height="256" />');
+		}
+		if (target === 'tits or gtfo'){
+			matched = true;
+			this.sendReplyBox('<img src="http://static.fjcdn.com/pictures/Tits_858516_1361125.jpg" width="250" height="329" />');
+		}
+		if (target === 'swiggity'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/9yZA32s.gif" />');
+		}
+		if (target === 'dat ass'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/owuyFAB.png" />');
+		}
+		if (target === 'in a row'){
+			matched = true;
+			this.sendReplyBox('<img src="http://i.imgur.com/W5K7Ey1.png" />');
+		}
+                if (target === 'i made this for you'){
+                        matched = true;
+                        this.sendReplyBox('<img src="http://i.imgur.com/EoITea4.gifg" />');
+                }
+                if (target === 'the fuck did you just say to me'){
+                        matched = true;
+                        this.sendReplyBox('<img src="http://i.imgur.com/1lOmwGW.jpg" />');
+                }
+                if (target === 'u fukn wot'){
+                        matched = true;
+                        this.sendReplyBox('<img src="http://i.imgur.com/L332nfL.jpg" />');
+                }
+                if (target === 'getrekt'){
+                        matched = true;
+                        this.sendReplyBox('<img src="http://i.imgur.com/XU7JlpQ.png" />');
+                }
+                if (target === ''){
+			}
+		else if (!matched) {
 
-};
-    away: function (target, room, user) {
+			this.sendReply(''+target+' is not available or non existent.');
+		}
+	},
+		kakujarules: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<font size="4" color="#FF24E5"><b>Kakuja Rules</b></font><br><font size="2" color="#3DA5FF">1.) Try to limit the caps unless we are singing.<br>2.) Staff members are not to warn, mute, or lock any other staff without an admin\'s permission (unless of course they break a global rule)<br>3.) Admins are the only ones who may ban staff or deliver demotions or promotions.<br>4.) Anyone who mentions nudes will receive an instant lock. If they mention it again, they will be banned, no questions asked.<br>5.) Parukia members are on permanent watch, except for Nick and Vile.<br>6.) All warnings, mutes, and locks should be delivered maturely and for warranted reasons, not personal reasons.<br>7.) Kakuja has made some changes to typings, type effectiveness, moves, movesets, abilities, and stats. If you have any questions about the changes, please feel free to click on the Kakuja Pokemon button in the roomintro or message an admin.<br>8.) There is a fine line between constructive criticism and disrespect.<br>9.) Staff, please remember that locks are a final measure for discipline, and to deliver warns and mutes first, lock only if the behaviour continues.<br>10.) Be nice.<br>11.) We do not talk about the Wonder Guard Sableye incident. ');
+	},
+		alice: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('I don\'t think you quite understand the severeity of the situation we\'ve gotten ourselves into, do you? You can\'t even seem to grasp the mess things are in, how deep in this shit we are. We shouldn\'t have followed that rabbit down into Wonderland Alice. Everythings all fucked up. Theres a war going on, And you\'re the cause of it. One day you\'ll realise this, when you see just how much death and destruction you\'ve caused.. The queen of hearts has sent her soldiers out, they\'re on the hunt, nowhere is safe, first they took the chesire cat, wiped his smile right off his face. Then the caterpillar, poor fucker was stoned, never even stood a chance, and Now you and I alice. The mad hatter, We\'re Next.. But until then I think you should know thats it\'s all your fault.. all your fault that we\'re sitting here with Deez Nuts.');
+	},
+		suicune: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<table><td bgcolor="#303030" width="900"><br><table><td><span class="col numcol">Ubers&nbsp;</span></td><td> <span class="col iconcol"><img src="http://i.imgur.com/1cLvq4P.png" width="85" height="85" align="bottom"></span></td><td><font size="3">&nbsp;&nbsp;Charlotte&nbsp;&nbsp;&nbsp;&nbsp;</font></td><td><img src="http://play.pokemonshowdown.com/sprites/types/Water.png" width="32" height="14"><img src="http://play.pokemonshowdown.com/sprites/types/Dark.png" width="32" height="14">&nbsp;&nbsp;&nbsp;</td><td><font size="2" width="100%">Serene Grace &nbsp;&nbsp;<i> Eternal Beauty</i></td></table><table><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<font size="1">HP</font><br><font size="1">&nbsp;100</font></td><td>&nbsp;<font size="1">Atk</font><br><font size="1">&nbsp;&nbsp;75</font></td><td>&nbsp;<font size="1">Def</font><br><font size="1">&nbsp;110</font></td><td>&nbsp;<font size="1">SpA</font><br><font size="1">&nbsp;&nbsp;100</font></td><td>&nbsp;<font size="1">SpD</font><br><font size="1">&nbsp;&nbsp;110</font></td><td>&nbsp;<font size="1">Spe</font><br><font size="1">&nbsp;&nbsp;90</font></td><td>&nbsp;&nbsp;<font size="1">BST</font><br><font size="1">&nbsp;&nbsp;&nbsp;585</font></td></table><table><td><font size="1" color="grey">Dex#:</font> <font size="1"> 245 | <font size="1" color="grey">Height:</font> <font size="1">1.57 m | <font size="1" color="grey">Weight:</font> <font size="1">58 kg <i>(80 BP)</font> | <font size="1" color="grey">Dex Colour:</font> <font size="1"> Blue | <font size="1" color="grey">Egg Group(s):</font> <font size="1">Pure, Perfection | <font size="1" color="grey">Does Not Evolve</td></table></table>');
+	},
+		serperior: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<table><td bgcolor="#303030" width="900"><br><table><td><span class="col numcol">Ubers&nbsp;</span></td><td> <span class="col iconcol"><img src="http://73.10.53.242:8000/avatars/p3kenM2.png" width="84" height="76" align="bottom"></span></td><td><font size="3">&nbsp;&nbsp;Kevin&nbsp;&nbsp;&nbsp;&nbsp;</font></td><td><img src="http://play.pokemonshowdown.com/sprites/types/Grass.png" width="32" height="14">&nbsp;&nbsp;&nbsp;</td><td><font size="2" width="100%">Analytic &nbsp;&nbsp;<i> Defiant</i></td></table><table><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<font size="1">HP</font><br><font size="1">&nbsp;&nbsp;75</font></td><td>&nbsp;<font size="1">Atk</font><br><font size="1">&nbsp;&nbsp;75</font></td><td>&nbsp;<font size="1">Def</font><br><font size="1">&nbsp;&nbsp;95</font></td><td>&nbsp;<font size="1">SpA</font><br><font size="1">&nbsp;&nbsp;100</font></td><td>&nbsp;<font size="1">SpD</font><br><font size="1">&nbsp;&nbsp;&nbsp;95</font></td><td>&nbsp;<font size="1">Spe</font><br><font size="1">&nbsp;113</font></td><td>&nbsp;&nbsp;<font size="1">BST</font><br><font size="1">&nbsp;&nbsp;553</font></td></table><table><td><font size="1" color="grey">Dex#:</font> <font size="1"> 497 | <font size="1" color="grey">Height:</font> <font size="1">2.01 m | <font size="1" color="grey">Weight:</font> <font size="1">69 kg <i>(80 BP)</font> | <font size="1" color="grey">Dex Colour:</font> <font size="1"> Green | <font size="1" color="grey">Egg Group(s):</font> <font size="1">Snake, Sociopath | <font size="1" color="grey">Does Not Evolve</td></table></table>');
+	},
+		vaporeon: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<table><td bgcolor="#303030" width="900"><br><table><td><span class="col numcol">Ubers&nbsp;</span></td><td> <span class="col iconcol"><img src="http://73.10.53.242:8000/avatars/Hayley.png" width="80" height="80" align="bottom"></span></td><td><font size="3">&nbsp;&nbsp;Hayley&nbsp;&nbsp;&nbsp;&nbsp;</font></td><td><img src="http://play.pokemonshowdown.com/sprites/types/Water.png" width="32" height="14">&nbsp;&nbsp;&nbsp;</td><td><font size="2" width="100%">Friend Guard &nbsp;&nbsp;<i> Pixilate</i></td></table><table><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<font size="1">HP</font><br><font size="1">&nbsp;&nbsp;135</font></td><td>&nbsp;<font size="1">Atk</font><br><font size="1">&nbsp;&nbsp;80</font></td><td>&nbsp;<font size="1">Def</font><br><font size="1">&nbsp;&nbsp;60</font></td><td>&nbsp;<font size="1">SpA</font><br><font size="1">&nbsp;&nbsp;110</font></td><td>&nbsp;<font size="1">SpD</font><br><font size="1">&nbsp;&nbsp;&nbsp;95</font></td><td>&nbsp;<font size="1">Spe</font><br><font size="1">&nbsp;80</font></td><td>&nbsp;&nbsp;<font size="1">BST</font><br><font size="1">&nbsp;&nbsp;565</font></td></table><table><td><font size="1" color="grey">Dex#:</font> <font size="1"> 134 | <font size="1" color="grey">Height:</font> <font size="1">1.6 m | <font size="1" color="grey">Weight:</font> <font size="1">58 kg <i>(60 BP)</font> | <font size="1" color="grey">Dex Colour:</font> <font size="1"> Blue | <font size="1" color="grey">Egg Group(s):</font> <font size="1">Natural, Beauty | <font size="1" color="grey">Does Not Evolve</td></table></table>');
+	},
+		floatzel: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<table><td bgcolor="#303030" width="900"><br><table><td><span class="col numcol">Ubers&nbsp;</span></td><td> <span class="col iconcol"><img src="http://73.10.53.242:8000/avatars/float.png" width="95" height="80" align="bottom"></span></td><td><font size="3">&nbsp;&nbsp;Float&nbsp;&nbsp;&nbsp;&nbsp;</font></td><td><img src="http://play.pokemonshowdown.com/sprites/types/Water.png" width="32" height="14"><img src="http://play.pokemonshowdown.com/sprites/types/Fighting.png" width="32" height="14">&nbsp;&nbsp;&nbsp;</td><td><font size="2" width="100%">Pixilate &nbsp;&nbsp;<i> Swift Swim</i></td></table><table><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<font size="1">HP</font><br><font size="1">&nbsp;&nbsp;85</font></td><td>&nbsp;<font size="1">Atk</font><br><font size="1">&nbsp;&nbsp;105</font></td><td>&nbsp;<font size="1">Def</font><br><font size="1">&nbsp;&nbsp;70</font></td><td>&nbsp;<font size="1">SpA</font><br><font size="1">&nbsp;&nbsp;85</font></td><td>&nbsp;<font size="1">SpD</font><br><font size="1">&nbsp;&nbsp;&nbsp;70</font></td><td>&nbsp;<font size="1">Spe</font><br><font size="1">&nbsp;110</font></td><td>&nbsp;&nbsp;<font size="1">BST</font><br><font size="1">&nbsp;&nbsp;530</font></td></table><table><td><font size="1" color="grey">Dex#:</font> <font size="1"> 419 | <font size="1" color="grey">Height:</font> <font size="1">1.7 m | <font size="1" color="grey">Weight:</font> <font size="1">55 kg <i>(80 BP)</font> | <font size="1" color="grey">Dex Colour:</font> <font size="1"> Brown | <font size="1" color="grey">Egg Group(s):</font> <font size="1">Logic, Digital | <font size="1" color="grey">Does Not Evolve</td></table></table>');
+	},
+		sableye: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<table><td bgcolor="#303030" width="900"><br><table><td><span class="col numcol">Ubers&nbsp;</span></td><td> <span class="col iconcol"><img src="http://i.imgur.com/a0lcSHo.png" width="80" height="80" align="bottom"></span></td><td><font size="3">&nbsp;&nbsp;Travis&nbsp;&nbsp;&nbsp;&nbsp;</font></td><td><img src="http://play.pokemonshowdown.com/sprites/types/Dark.png" width="32" height="14"><img src="http://play.pokemonshowdown.com/sprites/types/Ghost.png" width="32" height="14">&nbsp;&nbsp;&nbsp;</td><td><font size="2" width="100%">Dark Aura&nbsp;&nbsp;<i> Defiant</i></td></table><table><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<font size="1">HP</font><br><font size="1">&nbsp;&nbsp;50</font></td><td>&nbsp;<font size="1">Atk</font><br><font size="1">&nbsp;&nbsp;75</font></td><td>&nbsp;<font size="1">Def</font><br><font size="1">&nbsp;&nbsp;75</font></td><td>&nbsp;<font size="1">SpA</font><br><font size="1">&nbsp;&nbsp;5m</font></td><td>&nbsp;<font size="1">SpD</font><br><font size="1">&nbsp;&nbsp;&nbsp;65</font></td><td>&nbsp;<font size="1">Spe</font><br><font size="1">&nbsp;50</font></td><td>&nbsp;&nbsp;<font size="1">BST</font><br><font size="1">&nbsp;&nbsp;5,380,000</font></td></table><table><td><font size="1" color="grey">Dex#:</font> <font size="1"> 658 | <font size="1" color="grey">Height:</font> <font size="1">1.6 m | <font size="1" color="grey">Weight:</font> <font size="1">66 kg <i>(80 BP)</font> | <font size="1" color="grey">Dex Colour:</font> <font size="1"> Purple | <font size="1" color="grey">Egg Group(s):</font> <font size="1">Protective, Caring| <font size="1" color="grey">Does Not Evolve</td></table></table>');
+	},
+		mewtwo: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<table><td bgcolor="#303030" width="900"><br><table><td><span class="col numcol">Ubers&nbsp;</span></td><td> <span class="col iconcol"><img src="http://i.imgur.com/SVVNMqi.png" width="100" height="70" align="bottom"></span></td><td><font size="3">&nbsp;&nbsp;Aurora&nbsp;&nbsp;&nbsp;&nbsp;</font></td><td><img src="http://play.pokemonshowdown.com/sprites/types/Psychic.png" width="32" height="14"><img src="http://play.pokemonshowdown.com/sprites/types/Dark.png" width="32" height="14">&nbsp;&nbsp;&nbsp;</td><td><font size="2" width="100%">Intimidate &nbsp;&nbsp;<i> Cute Charm</i></td></table><table><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<font size="1">HP</font><br><font size="1">&nbsp;&nbsp;106</font></td><td>&nbsp;<font size="1">Atk</font><br><font size="1">&nbsp;&nbsp;110</font></td><td>&nbsp;<font size="1">Def</font><br><font size="1">&nbsp;&nbsp;90</font></td><td>&nbsp;<font size="1">SpA</font><br><font size="1">&nbsp;&nbsp;154</font></td><td>&nbsp;<font size="1">SpD</font><br><font size="1">&nbsp;&nbsp;&nbsp;90</font></td><td>&nbsp;<font size="1">Spe</font><br><font size="1">&nbsp;130</font></td><td>&nbsp;&nbsp;<font size="1">BST</font><br><font size="1">&nbsp;&nbsp;680</font></td></table><table><td><font size="1" color="grey">Dex#:</font> <font size="1"> 150 | <font size="1" color="grey">Height:</font> <font size="1">1.57 m | <font size="1" color="grey">Weight:</font> <font size="1">58 kg <i>(80 BP)</font> | <font size="1" color="grey">Dex Colour:</font> <font size="1"> Purple | <font size="1" color="grey">Egg Group(s):</font> <font size="1">Pure, Perfection | <font size="1" color="grey">Does Not Evolve</td></table></td></table></table>');
+	},
+		beedrill: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<table><td><span class="col numcol">Ubers&nbsp;</span></td><td> <span class="col iconcol"><img src="http://73.10.53.242:8000/avatars/Ad.png" width="87" height="78" align="bottom"></span></td><td><font size="3">&nbsp;&nbsp;Adam&nbsp;&nbsp;&nbsp;&nbsp;</font></td><td><img src="http://play.pokemonshowdown.com/sprites/types/Bug.png" width="32" height="14"><img src="http://play.pokemonshowdown.com/sprites/types/Poison.png" width="32" height="14">&nbsp;&nbsp;&nbsp;</td><td><font size="2" width="100%">Pressure &nbsp;&nbsp;<i> Cloud Nine</i></td></table><table><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<font size="1">HP</font><br><font size="1">&nbsp;&nbsp;65</font></td><td>&nbsp;<font size="1">Atk</font><br><font size="1">&nbsp;&nbsp;195</font></td><td>&nbsp;<font size="1">Def</font><br><font size="1">&nbsp;&nbsp;40</font></td><td>&nbsp;<font size="1">SpA</font><br><font size="1">&nbsp;&nbsp;15</font></td><td>&nbsp;<font size="1">SpD</font><br><font size="1">&nbsp;&nbsp;&nbsp;80</font></td><td>&nbsp;<font size="1">Spe</font><br><font size="1">&nbsp;145</font></td><td>&nbsp;&nbsp;<font size="1">BST</font><br><font size="1">&nbsp;&nbsp;540</font></td></table><table><td><font size="1" color="grey">Dex#:</font> <font size="1"> 15 | <font size="1" color="grey">Height:</font> <font size="1">1.8 m | <font size="1" color="grey">Weight:</font> <font size="1">65 kg <i>(80 BP)</font> | <font size="1" color="grey">Dex Colour:</font> <font size="1"> Yellow | <font size="1" color="grey">Egg Group(s):</font> <font size="1">Model, Cutie | <font size="1" color="grey">Does Not Evolve</td></table></td></table>');
+	},
+	victini: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<table><td><span class="col numcol">Ubers&nbsp;</span></td><td> <span class="col iconcol"><img src="http://73.10.53.242:8000/avatars/victilite.png" width="80" height="90" align="bottom"></span></td><td><font size="3">&nbsp;&nbsp;Mark&nbsp;&nbsp;&nbsp;&nbsp;</font></td><td><img src="http://play.pokemonshowdown.com/sprites/types/Psychic.png" width="32" height="14"><img src="http://play.pokemonshowdown.com/sprites/types/Fire.png" width="32" height="14">&nbsp;&nbsp;&nbsp;</td><td><font size="2" width="100%">Flare Boost &nbsp;&nbsp;<i> Sniper</i></td></table><table><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<font size="1">HP</font><br><font size="1">&nbsp;&nbsp;100</font></td><td>&nbsp;<font size="1">Atk</font><br><font size="1">&nbsp;&nbsp;100</font></td><td>&nbsp;<font size="1">Def</font><br><font size="1">&nbsp;&nbsp;100</font></td><td>&nbsp;<font size="1">SpA</font><br><font size="1">&nbsp;&nbsp;100</font></td><td>&nbsp;<font size="1">SpD</font><br><font size="1">&nbsp;&nbsp;&nbsp;100</font></td><td>&nbsp;<font size="1">Spe</font><br><font size="1">&nbsp;100</font></td><td>&nbsp;&nbsp;<font size="1">BST</font><br><font size="1">&nbsp;&nbsp;600</font></td></table><table><td><font size="1" color="grey">Dex#:</font> <font size="1"> 262 | <font size="1" color="grey">Height:</font> <font size="1">1.4 m | <font size="1" color="grey">Weight:</font> <font size="1">36 kg <i>(40 BP)</font> | <font size="1" color="grey">Dex Colour:</font> <font size="1"> Yellow | <font size="1" color="grey">Egg Group(s):</font> <font size="1">Messy, Naive | <font size="1" color="grey">Does Not Evolve</td></table>');
+	},
+	sylveon: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<table><td><span class="col numcol">Ubers&nbsp;</span></td><td> <span class="col iconcol"><img src="http://73.10.53.242:8000/avatars/Anna.png" width="80" height="80" align="bottom"></span></td><td><font size="3">&nbsp;&nbsp;Annabelle&nbsp;&nbsp;&nbsp;&nbsp;</font></td><td><img src="http://play.pokemonshowdown.com/sprites/types/Fairy.png" width="32" height="14">&nbsp;&nbsp;&nbsp;</td><td><font size="2" width="100%">Pixilate &nbsp;&nbsp;<i> Prankster</i></td></table><table><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<font size="1">HP</font><br><font size="1">&nbsp;&nbsp;95</font></td><td>&nbsp;<font size="1">Atk</font><br><font size="1">&nbsp;&nbsp;65</font></td><td>&nbsp;<font size="1">Def</font><br><font size="1">&nbsp;&nbsp;65</font></td><td>&nbsp;<font size="1">SpA</font><br><font size="1">&nbsp;&nbsp;140</font></td><td>&nbsp;<font size="1">SpD</font><br><font size="1">&nbsp;&nbsp;&nbsp;130</font></td><td>&nbsp;<font size="1">Spe</font><br><font size="1">&nbsp;60</font></td><td>&nbsp;&nbsp;<font size="1">BST</font><br><font size="1">&nbsp;&nbsp;555</font></td></table><table><td><font size="1" color="grey">Dex#:</font> <font size="1"> 150 | <font size="1" color="grey">Height:</font> <font size="1">1.6 m | <font size="1" color="grey">Weight:</font> <font size="1">44 kg <i>(60 BP)</font> | <font size="1" color="grey">Dex Colour:</font> <font size="1"> Pink | <font size="1" color="grey">Egg Group(s):</font> <font size="1">Young, Mischevious | <font size="1" color="grey">Does Not Evolve</td></table>');
+	},
+	mightyena: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<table><td><span class="col numcol">Ubers&nbsp;</span></td><td> <span class="col iconcol"><img src="http://73.10.53.242:8000/avatars/Mighty.png" width="80" height="90" align="bottom"></span></td><td><font size="3">&nbsp;&nbsp;James&nbsp;&nbsp;&nbsp;&nbsp;</font></td><td><img src="http://play.pokemonshowdown.com/sprites/types/Dark.png" width="32" height="14">&nbsp;&nbsp;&nbsp;</td><td><font size="2" width="100%">Prankster &nbsp;&nbsp;<i> Friend Guard</i></td></table><table><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<font size="1">HP</font><br><font size="1">&nbsp;&nbsp;70</font></td><td>&nbsp;<font size="1">Atk</font><br><font size="1">&nbsp;&nbsp;130</font></td><td>&nbsp;<font size="1">Def</font><br><font size="1">&nbsp;&nbsp;70</font></td><td>&nbsp;<font size="1">SpA</font><br><font size="1">&nbsp;&nbsp;60</font></td><td>&nbsp;<font size="1">SpD</font><br><font size="1">&nbsp;&nbsp;&nbsp;60</font></td><td>&nbsp;<font size="1">Spe</font><br><font size="1">&nbsp;70</font></td><td>&nbsp;&nbsp;<font size="1">BST</font><br><font size="1">&nbsp;&nbsp;480</font></td></table><table><td><font size="1" color="grey">Dex#:</font> <font size="1"> 262 | <font size="1" color="grey">Height:</font> <font size="1">1.8 m | <font size="1" color="grey">Weight:</font> <font size="1">68 kg <i>(80 BP)</font> | <font size="1" color="grey">Dex Colour:</font> <font size="1"> Black | <font size="1" color="grey">Egg Group(s):</font> <font size="1">Sneaky, Intelligent | <font size="1" color="grey">Does Not Evolve</td></table>');
+	},
+	viewemotes: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<center><font size="4" color="#FF24E5"><b>Kakuja Emotes</b></font></center><br><center><font size="2"><i>If you have a suggestion PM an Admin(~) or Leader(&) with the name and image you want, and they will add it ASAP. (Size Limit of : 40x40)</font></center><button class="astext"><img src="http://i.imgur.com/6Evl1pL.jpg" width="30" height="25"><br>badaSS</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://i.imgur.com/irQ3x6G.png" width="30" height="30"><br>cHild</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://i.imgur.com/RhMeAme.gif" width="30" height="30"><br>feelspink</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://static-cdn.jtvnw.net/jtv_user_pictures/chansub-global-emoticon-3a624954918104fe-19x27.png" width="20" height="30"><br>Kreygasm</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://a.deviantart.net/avatars/d/o/dogeoffical.gif" width="30" height="30"><br>Doge</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="https://fungustime.pw/tastyplug/emotes/gifs/34.gif" width="36" height="35"><br>KappaSpin</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://www.freesmileys.org/emoticons/emoticon-pokemon-015.gif" width="32" height="32"><br>ZZzz</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://i.imgur.com/kixjIOR.gif" width="32" height="23"><br>O_O</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://i.imgur.com/uOZkuAU.gif" width="23" height="34"><br>baLLs</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://puu.sh/hDSDm/9e75df80e5.gif" width="72" height="56"><br>LooL</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://i.imgur.com/DHWjlPA.png" width="29" height="26"><br>D:</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://www.freesmileys.org/emoticons/emoticon-pokemon-001.gif" width="45" height="45"><br>juhBlaze</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://chatslang.com/images/shortcuts/twitch/admins/dansgame.png" width="27" height="37"><br>DansGame</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://www.freesmileys.org/emoticons/emoticon-pokemon-002.gif" width="39" height="43"><br>Weed</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://www.ps4news.de/forum/public/style_emoticons/default/trollface%20.gif" width="40" height="33"><br>troLL</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://puu.sh/hJQFn/675369762a.jpg" width="35" height="48"><br>Reagan</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://fc02.deviantart.net/fs71/f/2012/039/b/6/meowth_wink_avatar_by_milfeyu-d4p2vi8.png" width="49" height="35"><br>;)</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://i.imgur.com/MiwopCh.png" width="25" height="25"><br>^_^</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://i.imgur.com/Qmv32c7.png" width="25" height="25"><br>challengeaccepted</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://i.imgur.com/kd7oeiX.png" width="25" height="25"><br>fuckyeah</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://i.imgur.com/FChx5bz.png" width="25" height="25"><br>gj</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://i.imgur.com/uRJ4yNR.png" width="28" height="25"><br>justin</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://i.imgur.com/V3exz0t.png" width="27" height="29"><br>gusta</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://i.imgur.com/cee078K.png" width="35" height="35"><br>miley</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://i.imgur.com/7s6zezZ.png" width="30" height="30"><br>nicki</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://i.imgur.com/4Y4oQI2.png" width="25" height="25"><br>notbad</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://i.imgur.com/foDFdu5.png" width="30" height="31"><br>stopit</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://i.imgur.com/NPwDs9k.png" width="20" height="20"><br>pokerface</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://fc06.deviantart.net/fs71/f/2014/328/5/8/foxy_emoticon_icon_gif___five_nights_at_freddy_s_by_geeksomniac-d7vr08y.gif" width="30" height="30"><br>foxy</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://fc06.deviantart.net/fs70/f/2014/329/5/7/five_nights_at_freddy_s_2___sexy_chica___icon_gif_by_geeksomniac-d87lray.gif" width="30" height="30"><br>chica</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://fc07.deviantart.net/fs71/f/2014/300/4/0/freddy_emoticon_icon_gif___five_nights_at_freddy_s_by_geeksomniac-d7vwxmk.gif" width="30" height="30"><br>freddy fazbear</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://fc07.deviantart.net/fs71/f/2015/052/b/9/fnaf_3_springtrap_by_xgoldrobo-d8ixjvx.gif" width="30" height="30"><br>springtrap</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://fc01.deviantart.net/fs70/f/2014/327/9/f/bonnie_emoticon_icon_gif___five_nights_at_freddy_s_by_geeksomniac-d7wh4hg.gif" width="30" height="30"><br>bonnie</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://puu.sh/hlRLD/50835e4551.png" width="30" height="30"><br>mtn dew</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://puu.sh/hlRLO/09f5f7eb5b.png" width="30" height="30"><br>doritos</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://orig05.deviantart.net/3838/f/2015/108/b/1/output_d2yeww_by_nightfuryfire2-d8q6ed0.gif" width="30" height="30"><br>WoW</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="https://s3.amazonaws.com/mlg_chat_production/emoticons/mumbleturn.png" width="30" height="30"><br>turnon</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="https://s3.amazonaws.com/mlg_chat_production/emoticons/ricegumlowt.png" width="30" height="30"><br>lowtier</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://wordpress.tools.majorleaguegaming.com/wp-content/uploads/2014/09/rekt.png" width="30" height="30"><br>rekt</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://wordpress.tools.majorleaguegaming.com/wp-content/uploads/2014/09/letsgo.png" width="30" height="30"><br>leggo</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://fc07.deviantart.net/fs71/f/2014/341/5/0/_lennyface__by_romenx-d890etz.gif" width="30" height="30"><br>lennyface</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://i.imgur.com/kwR8Re9.png" width="30" height="30"><br>wtfman</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="astext"><img src="http://i.imgur.com/ampqCZi.gif" width="30" height="30"><br>fukya</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+	},
+	kevin: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<center><img src="http://puu.sh/hEZ0K/0bd7e38ecb.png" width="396" height="356"><br><font size="5">"Call Me Christian Gray"</font></center>');
+			
+	},
+	
+	fj: 'forcejoin',
+	fjoin: 'forcejoin',
+	forcejoin: function (tournament, target) {
+		tournament.addUser(target, false, this);
+	},
+
+        away: function (target, room, user) {
 		user.away = !user.away;
 		user.updateIdentity();
 		this.sendReply("You are " + (user.away ? "now" : "no longer") + " away.");
