@@ -34,21 +34,6 @@ exports.commands = {
 		if (alts.length) this.addModCommand("" + targetUser.name + "'s alts were also muted: " + alts.join(", "));
 
 		targetUser.mute(room.id, 24 * 60 * 60 * 1000, true);
-	},
 
-	flogout: 'forcelogout',
-	forcelogout: function (target, room, user) {
-		if (!target) return this.sendReply('/forcelogout [username], [reason] OR /flogout [username], [reason] - Reason is optional.');
-		if (!user.can('hotpatch')) return;
-		if ((user.locked || user.mutedRooms[room.id]) && !user.can('bypassall')) return this.sendReply('You cannot do this while unable to talk.');
-
-		target = this.splitTarget(target);
-		var targetUser = this.targetUser;
-		if (!targetUser) return this.sendReply('User ' + this.targetUsername + ' not found.');
-		if (targetUser.can('hotpatch')) return this.sendReply('You cannot force logout another Admin.');
-
-		this.addModCommand('' + targetUser.name + ' was forcibly logged out by ' + user.name + '.' + (target ? " (" + target + ")" : ""));
-		this.logModCommand(user.name + ' forcibly logged out ' + targetUser.name);
-		targetUser.resetName();
 	}
 };
