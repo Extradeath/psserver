@@ -1925,11 +1925,34 @@ var commands = exports.commands = {
 			this.sendReply("Help for the command '" + target + "' was not found. Try /help for general help");
 		}
 	},
+	memes: 'meme',
+	meme: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		target = target.toLowerCase();
+		var matched = false;
+		if (target === ''){
+			matched = true;
+			this.sendReplyBox('<center><b><font color="pink"><a href="http://pastebin.com/VT7Nc06s">List of Personal Commands!</a><br>Do you want your own personal command? Message a & or ~ and we will consider adding it!</font></b></center>');
+                }
+                if (target === 'extradeath'){
+			matched = true;
+			this.sendReplyBox('<img src="http://pokebot.everyboty.net/pix/2449.gif" />');
+		}
+		if (target === 'lopunny'){
+			matched = true;
+			this.sendReplyBox('<img src="http://rs1img.memecdn.com/lopunny-is-hot_o_700260.jpg" />');
+		}
+		 if (target === ''){
+			}
+		else if (!matched) {
+
+			this.sendReply(''+target+' is not available or non existent.');
+		}
+	},
+		vaporeon: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<table><td bgcolor="#303030" width="900"><br><table><td><span class="col numcol">Ubers&nbsp;</span></td><td> <span class="col iconcol"><img src="http://73.10.53.242:8000/avatars/Hayley.png" width="80" height="80" align="bottom"></span></td><td><font size="3">&nbsp;&nbsp;Hayley&nbsp;&nbsp;&nbsp;&nbsp;</font></td><td><img src="http://play.pokemonshowdown.com/sprites/types/Water.png" width="32" height="14">&nbsp;&nbsp;&nbsp;</td><td><font size="2" width="100%">Friend Guard &nbsp;&nbsp;<i> Pixilate</i></td></table><table><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<font size="1">HP</font><br><font size="1">&nbsp;&nbsp;135</font></td><td>&nbsp;<font size="1">Atk</font><br><font size="1">&nbsp;&nbsp;80</font></td><td>&nbsp;<font size="1">Def</font><br><font size="1">&nbsp;&nbsp;60</font></td><td>&nbsp;<font size="1">SpA</font><br><font size="1">&nbsp;&nbsp;110</font></td><td>&nbsp;<font size="1">SpD</font><br><font size="1">&nbsp;&nbsp;&nbsp;95</font></td><td>&nbsp;<font size="1">Spe</font><br><font size="1">&nbsp;80</font></td><td>&nbsp;&nbsp;<font size="1">BST</font><br><font size="1">&nbsp;&nbsp;565</font></td></table><table><td><font size="1" color="grey">Dex#:</font> <font size="1"> 134 | <font size="1" color="grey">Height:</font> <font size="1">1.6 m | <font size="1" color="grey">Weight:</font> <font size="1">58 kg <i>(60 BP)</font> | <font size="1" color="grey">Dex Colour:</font> <font size="1"> Blue | <font size="1" color="grey">Egg Group(s):</font> <font size="1">Natural, Beauty | <font size="1" color="grey">Does Not Evolve</td></table></table>');
 	
-	fj: 'forcejoin',
-	fjoin: 'forcejoin',
-	forcejoin: function (tournament, target) {
-		tournament.addUser(target, false, this);
 	},
 
         away: function (target, room, user) {
