@@ -196,14 +196,14 @@ exports.replsocketmode = 0600;
 //     - potd: Set PotD.
 //     - forcewin: /forcewin command.
 //     - battlemessage: /a command.
-exports.groupsranking = [' ', '¿', '+', '%', '@', '\u2605', '#', '&', '~'];
+exports.groupsranking = [' ', '¿', '+', '%', '@', '\u2605', '#', '#', '&', '~'];
 exports.groups = {
 	'~': {
 		id: "admin",
 		name: "Administrator",
 		root: true,
 		globalonly: true,
-		rank: 8
+		rank: 9
 	},
 	'&': {
 		id: "leader",
@@ -219,7 +219,7 @@ exports.groups = {
 		disableladder: true,
 		globalonly: true,
 		tournamentsmanagement: true,
-		rank: 7
+		rank: 8
 	},
 	'#': {
 		id: "owner",
@@ -233,6 +233,20 @@ exports.groups = {
 		roomonly: true,
 		tournamentsmanagement: true,
 		rank: 6
+	},
+	'#': {
+		id: "founder",
+		name: "Room Founder",
+		inherit: '@',
+		jurisdiction: 'u',
+		roomowner: true,
+		roommod: true,
+		roomdriver: true,
+		declare: true,
+		modchatall: true,
+		roomonly: true,
+		tournamentsmanagement: true,
+		rank: 7
 	},
 	'\u2605': {
 		id: "player",
