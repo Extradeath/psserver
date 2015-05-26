@@ -1925,24 +1925,28 @@ var commands = exports.commands = {
 			this.sendReply("Help for the command '" + target + "' was not found. Try /help for general help");
 		}
 	},
-	memes: 'meme',
+memes: 'meme',
 	meme: function(target, room, user) {
 		if (!this.canBroadcast()) return;
 		target = target.toLowerCase();
 		var matched = false;
 		if (target === ''){
 			matched = true;
-			this.sendReplyBox('<center><b><font color="pink"><a href="http://pastebin.com/VT7Nc06s">List of Personal Commands!</a><br>Do you want your own personal command? Message a & or ~ and we will consider adding it!</font></b></center>');
+			this.sendReplyBox('<center><b><font color="purple"><a href="http://pastebin.com/VT7Nc06s">List of memes!</a><br>Is there a meme missing that you want added? Message a & or ~ and we will consider adding it!</font></b></center>');
                 }
-                if (target === 'extradeath'){
+		if (target === 'shan'){
 			matched = true;
 			this.sendReplyBox('<img src="http://pokebot.everyboty.net/pix/2449.gif" />');
+		}
+		if (target === 'yuuki'){
+			matched = true;
+			this.sendReplyBox('<img src="http://33.media.tumblr.com/23cea9f0a942122a60cfd51c1ad36bee/tumblr_inline_nngvhcKqON1qfomi2_500.gif" />');
 		}
 		if (target === 'lopunny'){
 			matched = true;
 			this.sendReplyBox('<img src="http://rs1img.memecdn.com/lopunny-is-hot_o_700260.jpg" />');
-		}
-		 if (target === ''){
+                }
+                if (target === ''){
 			}
 		else if (!matched) {
 
