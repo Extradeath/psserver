@@ -1957,6 +1957,11 @@ memes: 'p',
 		if (target === 'carco'){
 			matched = true;
 			this.sendReplyBox('<img src="http://images3.wikia.nocookie.net/__cb20130420124403/cosmowright/images/6/61/Kappa.gif" />');
+		}
+		if (target === 'ribbons'){
+			matched = true;
+			this.sendReplyBox('<img src="https://38.media.tumblr.com/aa7c00c9057fbb0cdcd4d09819afa6b9/tumblr_nbuajdXlj21toiaw4o1_500.gif" />');
+			
 		
                 }
                 if (target === ''){
