@@ -1925,7 +1925,7 @@ var commands = exports.commands = {
 			this.sendReply("Help for the command '" + target + "' was not found. Try /help for general help");
 		}
 	},
-memes: 'meme',
+memes: 'm',
 	meme: function(target, room, user) {
 		if (!this.canBroadcast()) return;
 		target = target.toLowerCase();
