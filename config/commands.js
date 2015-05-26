@@ -1945,6 +1945,19 @@ memes: 'meme',
 		if (target === 'lopunny'){
 			matched = true;
 			this.sendReplyBox('<img src="http://rs1img.memecdn.com/lopunny-is-hot_o_700260.jpg" />');
+		}
+		if (target === 'nick'){
+			matched = true;
+			this.sendReplyBox('<img src="https://33.media.tumblr.com/db0bd5c07b9d8d681f383be10a4ee676/tumblr_mujon3JzXH1r3maj7o1_500.gif" />');
+		}
+		if (target === 'hayley'){
+			matched = true;
+			this.sendReplyBox('<img src="http://31.media.tumblr.com/fe0a520733af86455d7ba1e01f400ae1/tumblr_n0s2irvsba1tpkaljo1_500.gif" />');
+		}
+		if (target === 'carco'){
+			matched = true;
+			this.sendReplyBox('<img src="http://images3.wikia.nocookie.net/__cb20130420124403/cosmowright/images/6/61/Kappa.gif" />');
+		
                 }
                 if (target === ''){
 			}
@@ -1955,7 +1968,7 @@ memes: 'meme',
 	},
 		vaporeon: function(target, room, user) {
 		if (!this.canBroadcast()) return;
-		this.sendReplyBox('<table><td bgcolor="#303030" width="900"><br><table><td><span class="col numcol">Ubers&nbsp;</span></td><td> <span class="col iconcol"><img src="http://73.10.53.242:8000/avatars/Hayley.png" width="80" height="80" align="bottom"></span></td><td><font size="3">&nbsp;&nbsp;Hayley&nbsp;&nbsp;&nbsp;&nbsp;</font></td><td><img src="http://play.pokemonshowdown.com/sprites/types/Water.png" width="32" height="14">&nbsp;&nbsp;&nbsp;</td><td><font size="2" width="100%">Friend Guard &nbsp;&nbsp;<i> Pixilate</i></td></table><table><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<font size="1">HP</font><br><font size="1">&nbsp;&nbsp;135</font></td><td>&nbsp;<font size="1">Atk</font><br><font size="1">&nbsp;&nbsp;80</font></td><td>&nbsp;<font size="1">Def</font><br><font size="1">&nbsp;&nbsp;60</font></td><td>&nbsp;<font size="1">SpA</font><br><font size="1">&nbsp;&nbsp;110</font></td><td>&nbsp;<font size="1">SpD</font><br><font size="1">&nbsp;&nbsp;&nbsp;95</font></td><td>&nbsp;<font size="1">Spe</font><br><font size="1">&nbsp;80</font></td><td>&nbsp;&nbsp;<font size="1">BST</font><br><font size="1">&nbsp;&nbsp;565</font></td></table><table><td><font size="1" color="grey">Dex#:</font> <font size="1"> 134 | <font size="1" color="grey">Height:</font> <font size="1">1.6 m | <font size="1" color="grey">Weight:</font> <font size="1">58 kg <i>(60 BP)</font> | <font size="1" color="grey">Dex Colour:</font> <font size="1"> Blue | <font size="1" color="grey">Egg Group(s):</font> <font size="1">Natural, Beauty | <font size="1" color="grey">Does Not Evolve</td></table></table>');
+		this.sendReplyBox('<table><td bgcolor="#CEECF5" width="900"><br><table><td><span class="col numcol">Ubers&nbsp;</span></td><td> <span class="col iconcol"><img src="http://73.10.53.242:8000/avatars/Hayley.png" width="80" height="80" align="bottom"></span></td><td><font size="3">&nbsp;&nbsp;Hayley&nbsp;&nbsp;&nbsp;&nbsp;</font></td><td><img src="http://play.pokemonshowdown.com/sprites/types/Water.png" width="32" height="14">&nbsp;&nbsp;&nbsp;</td><td><font size="2" width="100%">Friend Guard &nbsp;&nbsp;<i> Pixilate</i></td></table><table><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<font size="1">HP</font><br><font size="1">&nbsp;&nbsp;135</font></td><td>&nbsp;<font size="1">Atk</font><br><font size="1">&nbsp;&nbsp;80</font></td><td>&nbsp;<font size="1">Def</font><br><font size="1">&nbsp;&nbsp;60</font></td><td>&nbsp;<font size="1">SpA</font><br><font size="1">&nbsp;&nbsp;110</font></td><td>&nbsp;<font size="1">SpD</font><br><font size="1">&nbsp;&nbsp;&nbsp;95</font></td><td>&nbsp;<font size="1">Spe</font><br><font size="1">&nbsp;80</font></td><td>&nbsp;&nbsp;<font size="1">BST</font><br><font size="1">&nbsp;&nbsp;565</font></td></table><table><td><font size="1" color="grey">Dex#:</font> <font size="1"> 134 | <font size="1" color="grey">Height:</font> <font size="1">1.6 m | <font size="1" color="grey">Weight:</font> <font size="1">58 kg <i>(60 BP)</font> | <font size="1" color="grey">Dex Colour:</font> <font size="1"> Blue | <font size="1" color="grey">Egg Group(s):</font> <font size="1">Natural, Beauty | <font size="1" color="grey">Does Not Evolve</td></table></table>');
 	
 	},
 
