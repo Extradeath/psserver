@@ -1932,7 +1932,7 @@ memes: 'p',
 		var matched = false;
 		if (target === ''){
 			matched = true;
-			this.sendReplyBox('<center><b><font color="purple"><a href="http://pastebin.com/VT7Nc06s">List of memes!</a><br>Is there a meme missing that you want added? Message a & or ~ and we will consider adding it!</font></b></center>');
+			this.sendReplyBox('<center><b><font color="blue"><a href="http://pastebin.com/BL4tYnkS">List of memes!</a><br>Is there a meme missing that you want added? Message a & or ~ and we will consider adding it!</font></b></center>');
                 }
 		if (target === 'shan'){
 			matched = true;
@@ -1969,6 +1969,17 @@ memes: 'p',
 		if (target === 'ctc'){
 			matched = true;
 			this.sendReplyBox('<img src="http://i.picasion.com/resize80/55800b00bfae6c699720a970f92a848d.gif" />');
+		}
+		if (target === 'BT'){
+			matched = true;
+			this.sendReplyBox('<img src="http://imgur.com/EeMUBef" />');
+		}
+		if (target === 'MLG'){
+			matched = true;
+			this.sendReplyBox('<img src="https://i.paigeeworld.com/user-media/1423094400000/54c96bf160cb8350564ce44a_54d3d1392562d82969ab7313_rz.jpg" />');
+
+
+
 
 
 			
@@ -1983,7 +1994,50 @@ memes: 'p',
 	},
 		vaporeon: function(target, room, user) {
 		if (!this.canBroadcast()) return;
-		this.sendReplyBox('<table><td bgcolor="#CEECF5" width="900"><br><table><td><span class="col numcol">Ubers&nbsp;</span></td><td> <span class="col iconcol"><img src="http://73.10.53.242:8000/avatars/Hayley.png" width="80" height="80" align="bottom"></span></td><td><font size="3">&nbsp;&nbsp;Hayley&nbsp;&nbsp;&nbsp;&nbsp;</font></td><td><img src="http://play.pokemonshowdown.com/sprites/types/Water.png" width="32" height="14">&nbsp;&nbsp;&nbsp;</td><td><font size="2" width="100%">Friend Guard &nbsp;&nbsp;<i> Pixilate</i></td></table><table><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<font size="1">HP</font><br><font size="1">&nbsp;&nbsp;135</font></td><td>&nbsp;<font size="1">Atk</font><br><font size="1">&nbsp;&nbsp;80</font></td><td>&nbsp;<font size="1">Def</font><br><font size="1">&nbsp;&nbsp;60</font></td><td>&nbsp;<font size="1">SpA</font><br><font size="1">&nbsp;&nbsp;110</font></td><td>&nbsp;<font size="1">SpD</font><br><font size="1">&nbsp;&nbsp;&nbsp;95</font></td><td>&nbsp;<font size="1">Spe</font><br><font size="1">&nbsp;80</font></td><td>&nbsp;&nbsp;<font size="1">BST</font><br><font size="1">&nbsp;&nbsp;565</font></td></table><table><td><font size="1" color="grey">Dex#:</font> <font size="1"> 134 | <font size="1" color="grey">Height:</font> <font size="1">1.6 m | <font size="1" color="grey">Weight:</font> <font size="1">58 kg <i>(60 BP)</font> | <font size="1" color="grey">Dex Colour:</font> <font size="1"> Blue | <font size="1" color="grey">Egg Group(s):</font> <font size="1">Natural, Beauty | <font size="1" color="grey">Does Not Evolve</td></table></table>');
+		this.sendReplyBox('<table><td bgcolor="#CEECF5" width="900"><br><table><td><span class="col numcol">Ubers&nbsp;</span></td><td> <span class="col iconcol"><img src="http://73.10.53.242:8000/avatars/Hayley.png" width="80" height="80" align="bottom"></span></td><td><font size="3">&nbsp;&nbsp;Hayley&nbsp;&nbsp;&nbsp;&nbsp;</font></td><td><img src="http://play.pokemonshowdown.com/0sprites/types/Water.png" width="32" height="14">&nbsp;&nbsp;&nbsp;</td><td><font size="2" width="100%">Friend Guard &nbsp;&nbsp;<i> Pixilate</i></td></table><table><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<font size="1">HP</font><br><font size="1">&nbsp;&nbsp;135</font></td><td>&nbsp;<font size="1">Atk</font><br><font size="1">&nbsp;&nbsp;80</font></td><td>&nbsp;<font size="1">Def</font><br><font size="1">&nbsp;&nbsp;60</font></td><td>&nbsp;<font size="1">SpA</font><br><font size="1">&nbsp;&nbsp;110</font></td><td>&nbsp;<font size="1">SpD</font><br><font size="1">&nbsp;&nbsp;&nbsp;95</font></td><td>&nbsp;<font size="1">Spe</font><br><font size="1">&nbsp;80</font></td><td>&nbsp;&nbsp;<font size="1">BST</font><br><font size="1">&nbsp;&nbsp;565</font></td></table><table><td><font size="1" color="grey">Dex#:</font> <font size="1"> 134 | <font size="1" color="grey">Height:</font> <font size="1">1.6 m | <font size="1" color="grey">Weight:</font> <font size="1">58 kg <i>(60 BP)</font> | <font size="1" color="grey">Dex Colour:</font> <font size="1"> Blue | <font size="1" color="grey">Egg Group(s):</font> <font size="1">Natural, Beauty | <font size="1" color="grey">Does Not Evolve</td></table></table>');
+		
+		},
+		BT: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<center><table><td bgcolor="orange" width="900"><center><font color="black" size="4"><blink>UR BAD IF YOU RP</blink></font></center><br><center><img src="https://derpicdn.net/img/2015/1/5/799716/large.jpeg"; width="300" height="300"></center><br><center><font color= "black" size="2">I hate RP, do it in front of me and I eat your soul.</font></center></td></table>');
+			
+		},
+		Mikael: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<center><table><td bgcolor="#185DDC" width="900"><center><font color="#189DDC" size="4">FOLLOW ME ON SMOGON NERDS</font></center><br><center><img src="http://i.imgur.com/zgctU0r.png"; width="500" height="300"></center><br><center><font color= "hot pink" size="2">CTC IS IN MY BED</font></center></td></table>');
+			
+		},
+		iFlexy: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<center><table><td bgcolor="blue" width="900"><center><font color="#000000" size="6"><blink>Flexy2Sexy4U</blink></font></center><br><center><img src="http://i.imgur.com/DpHiFpX.png"; width="275" height="275"></center><br><center><font color= "#000000" size="3">I don't remember what he wanted here. Pls pm me to fix this :x</font></center></td></table>');
+			
+		},
+		Nick: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<center><table><td bgcolor="red" width="900"><center><font color="white" size="4"><blink>A new challenger has arrived!!</blink></font></center><br><center><img src="https://s-media-cache-ak0.pinimg.com/236x/74/fa/e9/74fae99be27b8432810188435dc06802.jpg"; width="240" height="280"></center><br><center><font color= "white" size="3" face="cursive">Monotype Master and Devon corp Representative</font></center></td></table>');
+			
+		},
+		Matt: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<center><table><td bgcolor="#81DAF5" width="900"><center><font color="#0B610B" size="4" face="cursive">Matt</font></center><br><center><img src="http://sprites.pokecheck.org/i/497.gif"; width="300" height="300"></center><br><center><font color= "#0B610B" size="3" face="arial">I am an outcast....</font></center></td></table>');
+			
+		},
+		Scrub: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<center><table><td bgcolor="#380B61" width="900"><center><img src="http://www.snazzyspace.com/banner-creator/banners/1432829831.png"; width="500" height="100"></center><br><center><img src="https://38.media.tumblr.com/037e7eb1eb2e4d042af45e48555f18a8/tumblr_mul09jqYAW1rr5vcmo1_500.gif"; align="middle" width="400" height="300"></center>');
+				
+		},
+		Carco: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<center><table><td bgcolor="#2EFEF7" width="900"><center><font color="#FE2E2E" size="6"> Carco11.</font></center><br><center><img src="http://goo.gl/9Knx1V"; width="200" height="200"></center><br><center><font color= "#FE2E2E" size="4"><a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">"There are many ways to eat a chocolate,but there is only one way to eat a chocolate bar." - Doc Lewis </font></a> </center></td></table>');
+				
+		},
+		Sly: function(target, room, user) {
+		if (!this.canBroadcast()) return;
+		this.sendReplyBox('<center><table><td bgcolor="#F781F3" width="900"><center><font color="blue" size="3">Rawr... And stuff. Rawr~</font></center><br><center><img src="http://i.imgur.com/enGsLA7.gif"; width="250" height="125"></center><br><center><font color= "color code" size="2">"Dont mess with me, I will get you back~"n_n</font></center></td></table>');
+		
+		
+		
 	
 	},
 
