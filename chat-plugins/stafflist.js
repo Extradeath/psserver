@@ -37,7 +37,7 @@ var fs = require('fs');
 -				}
 -			}
 -			connection.popup(
--				'Server Staff \n\n**Administrator**:\n'+ staff['admins'].join(', ') +
+-				'Serenity Staff \n\n**Administrator**:\n'+ staff['admins'].join(', ') +
 -				'\n**Leaders**:\n' + staff['leaders'].join(', ') +
 -				'\n**Moderators**:\n' + staff['mods'].join(', ') +
 -				'\n**Drivers**:\n' + staff['drivers'].join(', ') +
