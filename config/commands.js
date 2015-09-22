@@ -1992,10 +1992,6 @@ case 'fapping':
 t = 'Ⓕⓐⓟⓟⓘⓝⓖ';
 t2 = 'Fapping';
 break;
-case 'sexting':
-t = 'Ⓢⓔⓧⓣⓘⓝⓖ';
-t2 = 'getting laid in rp';
-break;
 case 'coding':
 t = 'Ⓒⓞⓓⓘⓝⓖ';
 t2 = 'stressing over code';
